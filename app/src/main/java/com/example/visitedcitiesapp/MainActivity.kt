@@ -8,14 +8,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -53,14 +58,17 @@ class MainActivity : ComponentActivity() {
             VisitedCitiesAppTheme {
                 val cities = remember { mutableStateListOf<City>() }
                 val sort = remember { mutableStateOf(false) }
-                val sortedList = if (sort.value) cities.sortedBy { it.name[0] } else cities
+                val sortedList = if (sort.value) cities.sortedBy { it.name } else cities
 
                 CitiesList(
                     sortedList,
                     onAddCity = { name, country ->
                         cities.add(City(name, country))
                     },
-                    onSort = { sort.value = !sort.value }
+                    onSort = { sort.value = !sort.value },
+                    onDelete = { city ->
+                        cities.remove(city)
+                    }
                 )
             }
         }
@@ -78,7 +86,8 @@ data class City(
 fun CitiesList(
     list: List<City>,
     onAddCity: (name: String, country: String) -> Unit,
-    onSort: () -> Unit
+    onSort: () -> Unit,
+    onDelete: (City) -> Unit
 ) {
     val showDialog = remember {
         mutableStateOf(false)
@@ -102,19 +111,33 @@ fun CitiesList(
                     .fillMaxSize()
                     .padding(10.dp, top = 90.dp)
             ) {
-                items(list) {
-                    Column(
+                itemsIndexed(list) { index, city ->
+                    Row(
                         modifier = Modifier
                             .padding(5.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(
-                                Color(0xffeeeeee)
+                                Color(0xFF9C8080)
                             )
                             .padding(10.dp)
                             .fillMaxWidth()
                     ) {
-                        Text(text = it.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text(text = it.country)
+                        Column(modifier = Modifier.fillMaxWidth(0.9f)) {
+                            Text(
+                                text = city.name,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                            Text(text = city.country, color = Color.Black)
+                        }
+                        IconButton(onClick = { onDelete(city) }) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = null,
+                                tint = Color.Black
+                            )
+                        }
                     }
                 }
             }
